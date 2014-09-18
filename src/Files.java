@@ -21,7 +21,6 @@ public class Files {
 		}
 
 		dirPath = new File(args[0]);
-
 		List<String> output = filesList();
 
 		for (String s : output)
@@ -34,6 +33,8 @@ public class Files {
 			List<String> output = new ArrayList<String>();
 			for (String s : files)
 				output.add(dirPath.getAbsolutePath() + File.separator + s);
+			for(String s : output)
+				s.replace(target, replacement)
 			return output;
 		}
 		return null;
