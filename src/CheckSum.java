@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -35,9 +36,9 @@ public class CheckSum {
 		}
 		try {
 			if (args.length == 1) {
-				
+
 				fileOrDirectory(args);
-				
+
 			} else if (args.length == 2) {
 
 				fileComparison(args);
@@ -50,44 +51,40 @@ public class CheckSum {
 
 	private static void fileOrDirectory(String[] args) throws NoSuchAlgorithmException, IOException {
 		File file = new File(args[0]);
-		
+		PrintWriter pw;
+
 		if (file.isDirectory()) {
-			
 			Directory dir = new Directory(file);
 			String[] fileList = dir.filesList();
-			
+			pw = new PrintWriter(file.toString() + "\\checksum.txt");
+
 			for (int i = 0; i < fileList.length; i++) {
-				
 				input[0] = fileList[i];
-				System.out.println(MD5CheckSum());
-				System.out.println(SHA1CheckSum());
-				
+				File files = new File(input[0]);
+
+				if (i != fileList.length - 1) {
+					pw.println(files.getName());
+					pw.println(MD5CheckSum());
+					pw.println(SHA1CheckSum());
+					pw.println();
+				} else {
+					pw.println(files.getName());
+					pw.println(MD5CheckSum());
+					pw.println(SHA1CheckSum());
+				}
+
 			}
+
+			pw.close();
 		} else if (file.isFile()) {
 			input[0] = file.getAbsolutePath();
-			
+
 			System.out.println(MD5CheckSum());
 			System.out.println(SHA1CheckSum());
-			
+
 		} else {
 			System.out.println("You have not entered a directory or a file.");
 			System.exit(0);
-		}
-	}
-
-	private static void fileComparison(String[] args) throws NoSuchAlgorithmException, IOException {
-		File file1 = new File(args[0]);
-		File file2 = new File(args[1]);
-		
-		if (file1.isFile() && file2.isFile()) {
-			
-			input[0] = args[0];
-			input[1] = args[1];
-			
-			if (comparison())
-				System.out.println("The files are identical");
-			else
-				System.out.println("The files are different");
 		}
 	}
 
@@ -101,6 +98,21 @@ public class CheckSum {
 		String returnable = "";
 		returnable += "SHA-1: " + hash(input[0], "SHA-1");
 		return returnable;
+	}
+
+	private static void fileComparison(String[] args) throws NoSuchAlgorithmException, IOException {
+		File file1 = new File(args[0]);
+		File file2 = new File(args[1]);
+
+		if (file1.isFile() && file2.isFile()) {
+			input[0] = args[0];
+			input[1] = args[1];
+
+			if (comparison())
+				System.out.println("The files are identical");
+			else
+				System.out.println("The files are different");
+		}
 	}
 
 	public static boolean comparison() throws NoSuchAlgorithmException, IOException {
@@ -126,12 +138,12 @@ public class CheckSum {
 	private static String hash(String inputFile, String algorithm) throws IOException, NoSuchAlgorithmException {
 		File file = new File(inputFile);
 		MessageDigest digest = MessageDigest.getInstance(algorithm);
-		
+
 		if (file.isDirectory() || file.isFile()) {
 			byte[] data = Files.readAllBytes(file.getAbsoluteFile().toPath());
 			digest.update(data);
 			byte[] hashed = digest.digest();
-			
+
 			return convertByteToHex(hashed);
 		}
 		return null;
@@ -139,10 +151,10 @@ public class CheckSum {
 
 	private static String convertByteToHex(byte[] bytes) {
 		StringBuffer stringBuffer = new StringBuffer();
-		
+
 		for (int i = 0; i < bytes.length; i++)
 			stringBuffer.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
-		
+
 		return stringBuffer.toString();
 	}
 }
